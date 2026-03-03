@@ -55,10 +55,14 @@
 
         .section-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
 
-        /* Search Input */
-        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        /* Search Input & Recommendations */
+        .search-container { display: flex; gap: 10px; position: relative; }
         .search-container input { flex: 1; padding: 15px; background: var(--surface-color); border: 1px solid var(--divider); border-radius: 25px; color: var(--text-primary); font-size: 16px; outline: none; }
         .search-container button { padding: 0 25px; border-radius: 25px; background: var(--text-primary); color: var(--bg-color); border: none; font-weight: bold; font-size: 16px; cursor: pointer; }
+        
+        .suggestions-box { display: none; position: absolute; top: 100%; left: 0; width: calc(100% - 90px); background: var(--surface-hover); border-radius: 10px; margin-top: 5px; z-index: 10; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .suggestion-item { padding: 12px 20px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .suggestion-item:hover { background: var(--surface-color); color: var(--text-primary); }
 
         /* Music Cards */
         .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
@@ -73,15 +77,25 @@
         .song-artist { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* History List */
-        .history-list { display: flex; flex-direction: column; gap: 15px; }
+        .history-list { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .history-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-radius: 8px; background: var(--surface-color); cursor: pointer; }
         .history-item img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; }
 
-        /* Forms */
+        /* Forms & Buttons */
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-secondary); }
         .form-group input { width: 100%; padding: 15px; background: var(--surface-color); border: 1px solid var(--divider); color: var(--text-primary); border-radius: 8px; outline: none; font-size: 16px; }
         .btn { background: var(--text-primary); color: var(--bg-color); border: none; padding: 15px 20px; border-radius: 25px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+        
+        /* Admin Navigation */
+        .admin-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--divider); padding-bottom: 10px; }
+        .admin-nav span { padding: 10px 20px; cursor: pointer; color: var(--text-secondary); border-radius: 20px; }
+        .admin-nav span.active { background: var(--pill-bg); color: var(--text-primary); font-weight: bold; }
+        .admin-section { display: none; }
+        .admin-section.active { display: block; }
+        
+        .manage-action-btns i { margin-left: 15px; cursor: pointer; font-size: 18px; }
+        .manage-action-btns i:hover { color: var(--yt-red); }
 
         /* ================= MINI PLAYER ================= */
         .mini-player { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--surface-color); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 500; border-top: 1px solid var(--divider); cursor: pointer; }
@@ -92,17 +106,20 @@
         .mini-progress { position: absolute; top: -2px; left: 0; width: 100%; height: 3px; background: var(--divider); }
         .mini-progress-fill { height: 100%; background: var(--yt-red); width: 0%; }
 
-        /* ================= FULL SCREEN PLAYER (Match Screenshot) ================= */
+        /* ================= FULL SCREEN PLAYER ================= */
         .full-player { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, #3e2723 0%, #1a1a1a 100%); z-index: 9999; display: flex; flex-direction: column; transition: transform 0.3s ease-out; }
         .full-player.active { transform: translateY(-100%); }
         
         .fp-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; font-size: 24px; }
-        .fp-tabs { display: flex; background: var(--pill-bg); border-radius: 20px; padding: 5px; font-size: 14px; }
+        .fp-tabs { display: flex; background: var(--pill-bg); border-radius: 20px; padding: 5px; font-size: 14px; cursor: pointer; }
         .fp-tabs span { padding: 5px 15px; border-radius: 15px; }
         .fp-tabs span.active { background: var(--surface-hover); }
         
-        .fp-cover-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .fp-cover-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
         .fp-cover { width: 100%; max-width: 350px; aspect-ratio: 1; border-radius: 10px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* Video Element inside Full Player */
+        #main-audio { width: 100%; max-width: 350px; aspect-ratio: 16/9; border-radius: 10px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; background: #000; }
         
         .fp-details { padding: 0 25px; margin-bottom: 15px; }
         .fp-title { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
@@ -112,24 +129,26 @@
         .fp-actions::-webkit-scrollbar { display: none; }
         .action-pill { background: var(--pill-bg); padding: 10px 15px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; cursor: pointer; }
 
+        /* Buffer Progress Bar Design */
         .fp-progress-container { padding: 0 25px; margin-bottom: 20px; }
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ffffff; cursor: pointer; margin-top: -6px; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 2px; }
-        .time-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-top: 10px; }
+        .custom-progress { position: relative; width: 100%; height: 20px; display: flex; align-items: center; cursor: pointer; }
+        .cp-bg { position: absolute; width: 100%; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; }
+        .cp-buffer { position: absolute; height: 3px; background: rgba(255,255,255,0.4); border-radius: 2px; width: 0%; transition: width 0.2s; pointer-events: none; }
+        .cp-fill { position: absolute; height: 3px; background: var(--yt-red); border-radius: 2px; width: 0%; pointer-events: none; }
+        .cp-thumb { position: absolute; right: -6px; top: -4.5px; width: 12px; height: 12px; background: #fff; border-radius: 50%; }
+        
+        .time-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-top: 5px; }
 
         .fp-controls { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; margin-bottom: 40px; font-size: 28px; }
         .fp-play-btn { width: 70px; height: 70px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; }
 
         .fp-bottom-tabs { display: flex; justify-content: space-around; padding: 20px; border-top: 1px solid var(--divider); font-size: 14px; color: var(--text-secondary); font-weight: 500; }
-        
         .up-next-list { display: none; padding: 20px; flex: 1; overflow-y: auto; background: var(--bg-color); }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .modal-content { background: var(--surface-color); padding: 30px; border-radius: 15px; text-align: center; width: 100%; max-width: 400px; }
+        .modal-content { background: var(--surface-color); padding: 30px; border-radius: 15px; text-align: left; width: 100%; max-width: 400px; }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -160,7 +179,6 @@
             <li onclick="switchPage('library')"><i class="fa-solid fa-music"></i> Library</li>
             <li onclick="switchPage('history')"><i class="fa-solid fa-clock-rotate-left"></i> History</li>
             <div style="height: 1px; background: var(--divider); margin: 15px 0;"></div>
-            <li onclick="switchPage('settings')"><i class="fa-solid fa-gear"></i> Settings</li>
             <li onclick="checkAdminPassword()"><i class="fa-solid fa-cloud-arrow-up"></i> Admin Panel</li>
         </ul>
     </div>
@@ -178,11 +196,12 @@
         <!-- Search -->
         <div id="search" class="page">
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Search songs, artists...">
+                <input type="text" id="searchInput" placeholder="Search songs, artists..." oninput="showSearchSuggestions()" autocomplete="off">
                 <button onclick="performSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div class="suggestions-box" id="search-suggestions"></div>
             </div>
             <div id="search-results" class="history-list">
-                <p style="color: var(--text-secondary); text-align: center; margin-top: 20px;">Search for your favorite tracks.</p>
+                <p style="color: var(--text-secondary); text-align: center;">Search for your favorite tracks.</p>
             </div>
         </div>
 
@@ -200,39 +219,41 @@
             </div>
         </div>
 
-        <!-- Settings -->
-        <div id="settings" class="page">
-            <div class="section-title">Settings</div>
-            <div class="form-group" style="max-width: 500px;">
-                <label>GitHub Personal Access Token (PAT)</label>
-                <input type="password" id="saveGitToken" placeholder="ghp_xxxxxxxxxxxxxxxxx">
-                <small style="color: var(--text-secondary); display: block; margin-top: 10px;">Token is saved securely in your browser's local storage.</small>
-            </div>
-            <button class="btn" style="max-width: 500px;" onclick="saveToken()">Save Settings</button>
-        </div>
-
         <!-- Admin -->
         <div id="admin" class="page">
-            <div class="section-title">Upload New Track</div>
-            <div style="max-width: 500px;">
-                <div class="form-group">
-                    <label>Song Title</label>
-                    <input type="text" id="songTitle" placeholder="e.g. Believer">
-                </div>
-                <div class="form-group">
-                    <label>Artist Name</label>
-                    <input type="text" id="artistName" placeholder="e.g. Imagine Dragons">
-                </div>
-                <div class="form-group">
-                    <label>Select Cover Image (Square recommended)</label>
-                    <input type="file" id="coverFile" accept="image/*" style="padding: 10px;">
-                </div>
-                <div class="form-group">
-                    <label>Select Audio File (.mp3)</label>
-                    <input type="file" id="audioFile" accept="audio/*" style="padding: 10px;">
-                </div>
+            <div class="section-title">Admin Dashboard</div>
+            
+            <div class="admin-nav">
+                <span class="active" onclick="switchAdminTab('upload')">Upload Media</span>
+                <span onclick="switchAdminTab('manage')">Manage Media</span>
+                <span onclick="switchAdminTab('settings')">Settings (API)</span>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="admin-upload" class="admin-section active" style="max-width: 500px;">
+                <div class="form-group"><label>Song Title</label><input type="text" id="songTitle" placeholder="e.g. Believer"></div>
+                <div class="form-group"><label>Publisher / Artist Name</label><input type="text" id="artistName" placeholder="e.g. Imagine Dragons"></div>
+                <div class="form-group"><label>Cover Avatar Image (.jpg/.png)</label><input type="file" id="coverFile" accept="image/*" style="padding: 10px;"></div>
+                <div class="form-group"><label>Audio File (.mp3)</label><input type="file" id="audioFile" accept="audio/*" style="padding: 10px;"></div>
+                <div class="form-group"><label>Video File (Optional, .mp4)</label><input type="file" id="videoFile" accept="video/mp4" style="padding: 10px;"></div>
                 <button class="btn" onclick="uploadData()" id="uploadBtn">Upload to Server</button>
                 <p id="upload-status" style="margin-top: 15px; text-align: center;"></p>
+            </div>
+
+            <!-- Manage Tab -->
+            <div id="admin-manage" class="admin-section">
+                <p style="color: var(--text-secondary); margin-bottom: 10px;">All Uploaded Tracks:</p>
+                <div class="history-list" id="manage-list"></div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="admin-settings" class="admin-section" style="max-width: 500px;">
+                <div class="form-group">
+                    <label>GitHub Personal Access Token (PAT)</label>
+                    <input type="password" id="saveGitToken" placeholder="ghp_xxxxxxxxxxxxxxxxx">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 10px;">Token is required to upload directly to GitHub.</small>
+                </div>
+                <button class="btn" onclick="saveToken()">Save API Key</button>
             </div>
         </div>
     </div>
@@ -258,17 +279,17 @@
         <div class="fp-header">
             <i class="fa-solid fa-chevron-down" onclick="toggleFullPlayer()" style="cursor: pointer;"></i>
             <div class="fp-tabs">
-                <span class="active">Song</span>
-                <span>Video</span>
+                <span id="tab-song" class="active" onclick="toggleMediaMode('song')">Song</span>
+                <span id="tab-video" onclick="toggleMediaMode('video')">Video</span>
             </div>
-            <div style="display: flex; gap: 20px;">
-                <i class="fa-solid fa-cast"></i>
-                <i class="fa-solid fa-ellipsis-vertical"></i>
-            </div>
+            <div style="display: flex; gap: 20px;"><i class="fa-solid fa-cast"></i><i class="fa-solid fa-ellipsis-vertical"></i></div>
         </div>
 
         <div class="fp-cover-container" id="fp-main-view">
+            <!-- Cover or Video shown based on tab -->
             <img id="fp-cover" class="fp-cover" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Cover">
+            <!-- Central Media Element (Used for Both Audio & Video) -->
+            <video id="main-audio" playsinline></video>
         </div>
 
         <div class="up-next-list" id="fp-up-next">
@@ -287,11 +308,15 @@
             <div class="action-pill"><i class="fa-regular fa-comment"></i> 116</div>
             <div class="action-pill"><i class="fa-solid fa-plus"></i> Save</div>
             <div class="action-pill"><i class="fa-solid fa-share"></i> Share</div>
-            <div class="action-pill"><i class="fa-solid fa-download"></i> Download</div>
         </div>
 
+        <!-- Custom Buffered Progress Bar -->
         <div class="fp-progress-container">
-            <input type="range" id="fp-progress-bar" value="0" min="0" max="100" step="0.1" oninput="seekAudio()">
+            <div class="custom-progress" id="custom-progress" onclick="seekAudio(event)">
+                <div class="cp-bg"></div>
+                <div class="cp-buffer" id="fp-buffer-fill"></div>
+                <div class="cp-fill" id="fp-progress-fill"><div class="cp-thumb"></div></div>
+            </div>
             <div class="time-row">
                 <span id="fp-curr-time">0:00</span>
                 <span id="fp-total-time">0:00</span>
@@ -313,18 +338,10 @@
         </div>
     </div>
 
-    <!-- Password Modal -->
-    <div class="modal" id="passwordModal">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 20px;">Admin Access</h3>
-            <input type="password" id="adminPass" class="form-group input" placeholder="Enter Password" style="width: 100%; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: none; background: #333; color: #fff;">
-            <button class="btn" onclick="verifyAdmin()">Login</button>
-            <button class="btn" style="background: transparent; border: 1px solid var(--divider);" onclick="closeModal()">Cancel</button>
-        </div>
+    <!-- General Password/Edit Modal -->
+    <div class="modal" id="systemModal">
+        <div class="modal-content" id="modal-content-area"></div>
     </div>
-
-    <!-- Audio Element -->
-    <audio id="main-audio"></audio>
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
@@ -353,7 +370,8 @@
         let playHistory = [];
         let currentSongIndex = -1;
         let isPlaying = false;
-        const audioElement = document.getElementById('main-audio');
+        const audioElement = document.getElementById('main-audio'); // Video Element
+        let editIdTemp = null;
 
         // --- Init ---
         window.onload = () => {
@@ -376,14 +394,13 @@
             event.currentTarget.classList.add('active');
             
             if(window.innerWidth <= 768) toggleSidebar();
-            
             if(pageId === 'history') renderHistory();
         }
 
         function toggleFullPlayer() {
             if(currentSongIndex === -1) return;
             document.getElementById('full-player').classList.toggle('active');
-            toggleUpNext(false); // Reset to cover view
+            toggleUpNext(false); 
         }
 
         function toggleUpNext(show) {
@@ -391,21 +408,56 @@
             document.getElementById('fp-up-next').style.display = show ? 'block' : 'none';
         }
 
+        // --- Media Mode (Video/Audio) Toggle ---
+        function toggleMediaMode(mode) {
+            document.getElementById('tab-song').classList.remove('active');
+            document.getElementById('tab-video').classList.remove('active');
+            
+            if(mode === 'video') {
+                document.getElementById('tab-video').classList.add('active');
+                document.getElementById('fp-cover').style.display = 'none';
+                document.getElementById('main-audio').style.display = 'block'; // Show video element
+            } else {
+                document.getElementById('tab-song').classList.add('active');
+                document.getElementById('fp-cover').style.display = 'block';
+                document.getElementById('main-audio').style.display = 'none'; // Hide video element
+            }
+        }
+
         // --- Settings & Auth ---
         function saveToken() {
             const token = document.getElementById('saveGitToken').value;
             localStorage.setItem('gitToken', token);
-            alert("Settings Saved Successfully!");
+            alert("API Key Saved Successfully!");
         }
 
-        function checkAdminPassword() { document.getElementById('passwordModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('passwordModal').style.display = 'none'; document.getElementById('adminPass').value = ''; }
+        function checkAdminPassword() {
+            const m = document.getElementById('systemModal');
+            document.getElementById('modal-content-area').innerHTML = `
+                <h3 style="margin-bottom: 20px;">Admin Login</h3>
+                <input type="password" id="adminPass" class="form-group input" placeholder="Enter Password" style="width: 100%; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: none; background: #333; color: #fff;">
+                <button class="btn" onclick="verifyAdmin()">Login</button>
+                <button class="btn" style="background: transparent; border: 1px solid var(--divider);" onclick="closeModal()">Cancel</button>
+            `;
+            m.style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('systemModal').style.display = 'none'; }
         function verifyAdmin() {
             if(document.getElementById('adminPass').value === "431564") {
                 closeModal(); switchPage('admin');
                 document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
-                document.querySelectorAll('.nav-links li')[6].classList.add('active');
+                document.querySelectorAll('.nav-links li')[4].classList.add('active');
             } else { alert("Incorrect Password!"); }
+        }
+
+        // --- Admin Tabs ---
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-nav span').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`admin-${tab}`).classList.add('active');
+            if(tab === 'manage') renderManageList();
         }
 
         // --- Data Loading ---
@@ -415,12 +467,12 @@
                 songs = [];
                 snapshot.forEach(doc => { songs.push({ id: doc.id, ...doc.data() }); });
                 renderGrids();
+                if(document.getElementById('admin-manage').classList.contains('active')) renderManageList();
             } catch (error) { console.error(error); }
         }
 
         function renderGrids() {
-            let html = '';
-            let listHtml = '';
+            let html = '', listHtml = '';
             songs.forEach((song, i) => {
                 const cover = song.coverUrl || '';
                 const imgTag = cover ? `<img src="${cover}" alt="cover">` : `<i class="fa-solid fa-music placeholder"></i>`;
@@ -446,8 +498,29 @@
             document.getElementById('library-list').innerHTML = listHtml;
         }
 
-        // --- Search & History ---
+        // --- Search Recommendations ---
+        function showSearchSuggestions() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const box = document.getElementById('search-suggestions');
+            if(!query) { box.style.display = 'none'; return; }
+            
+            const results = songs.filter(s => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)).slice(0, 5);
+            
+            if(results.length > 0) {
+                let html = '';
+                results.forEach(s => {
+                    const index = songs.findIndex(x => x.id === s.id);
+                    html += `<div class="suggestion-item" onclick="playTrack(${index}); document.getElementById('search-suggestions').style.display='none';"><i class="fa-solid fa-magnifying-glass"></i> ${s.title} • ${s.artist}</div>`;
+                });
+                box.innerHTML = html;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
         function performSearch() {
+            document.getElementById('search-suggestions').style.display = 'none';
             const query = document.getElementById('searchInput').value.toLowerCase();
             const results = songs.filter(s => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query));
             let html = '';
@@ -462,8 +535,9 @@
             document.getElementById('search-results').innerHTML = html || '<p>No results found.</p>';
         }
 
+        // --- History ---
         function addToHistory(song) {
-            playHistory = playHistory.filter(s => s.id !== song.id); // Remove duplicate
+            playHistory = playHistory.filter(s => s.id !== song.id); 
             playHistory.unshift(song);
             if(playHistory.length > 20) playHistory.pop();
         }
@@ -503,8 +577,17 @@
             currentSongIndex = index;
             const song = songs[index];
             
-            audioElement.src = song.url;
+            // If Video is uploaded, play video (it contains audio). Else, play audio file.
+            audioElement.src = song.videoUrl ? song.videoUrl : song.url;
             audioElement.load();
+            
+            // Check if video is available for tab highlighting
+            if(song.videoUrl) {
+                document.getElementById('tab-video').style.display = 'inline-block';
+            } else {
+                document.getElementById('tab-video').style.display = 'none';
+                toggleMediaMode('song'); // Force song view if no video
+            }
             
             // Update UI
             const coverSrc = song.coverUrl || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
@@ -548,24 +631,33 @@
 
         audioElement.addEventListener('ended', nextTrack);
 
+        // Progress & Buffer
         audioElement.addEventListener('timeupdate', () => {
             const { currentTime, duration } = audioElement;
             if(!isNaN(duration)) {
                 const pct = (currentTime / duration) * 100;
                 document.getElementById('mini-progress').style.width = `${pct}%`;
-                
-                const slider = document.getElementById('fp-progress-bar');
-                slider.value = pct;
-                slider.style.background = `linear-gradient(to right, #fff ${pct}%, rgba(255,255,255,0.2) ${pct}%)`;
-
+                document.getElementById('fp-progress-fill').style.width = `${pct}%`;
                 document.getElementById('fp-curr-time').innerText = formatTime(currentTime);
                 document.getElementById('fp-total-time').innerText = formatTime(duration);
             }
         });
 
-        function seekAudio() {
-            const slider = document.getElementById('fp-progress-bar');
-            audioElement.currentTime = (slider.value / 100) * audioElement.duration;
+        audioElement.addEventListener('progress', () => {
+            if (audioElement.buffered.length > 0) {
+                const bufferedEnd = audioElement.buffered.end(audioElement.buffered.length - 1);
+                const duration = audioElement.duration;
+                if (duration > 0) {
+                    document.getElementById('fp-buffer-fill').style.width = (bufferedEnd / duration) * 100 + "%";
+                }
+            }
+        });
+
+        function seekAudio(e) {
+            const container = document.getElementById('custom-progress');
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            audioElement.currentTime = (clickX / rect.width) * audioElement.duration;
         }
 
         function formatTime(t) {
@@ -573,7 +665,7 @@
             return `${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // --- Upload Logic ---
+        // --- Admin Upload & Edit ---
         function getBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -597,54 +689,115 @@
         async function uploadData() {
             const title = document.getElementById('songTitle').value;
             const artist = document.getElementById('artistName').value;
-            const audioFile = document.getElementById('audioFile').files[0];
             const coverFile = document.getElementById('coverFile').files[0];
+            const audioFile = document.getElementById('audioFile').files[0];
+            const videoFile = document.getElementById('videoFile').files[0];
             const token = localStorage.getItem('gitToken');
             const status = document.getElementById('upload-status');
             const btn = document.getElementById('uploadBtn');
 
-            if(!token) { alert("Please save GitHub Token in Settings first!"); return switchPage('settings'); }
-            if(!title || !artist || !audioFile) return alert("Title, Artist and Audio File are required!");
+            if(!token) return alert("Please save GitHub API Key in Settings tab first!");
+            if(!title || !artist || (!audioFile && !videoFile)) return alert("Title, Artist and at least one media file (Audio/Video) is required!");
 
             btn.disabled = true; btn.innerText = "Processing..."; status.innerText = "Encoding files...";
             status.style.color = "var(--text-primary)";
 
             try {
-                // 1. Audio Upload
-                status.innerText = "Uploading Audio to GitHub...";
-                const audioBase64 = await getBase64(audioFile);
-                const audioName = `${Date.now()}_${audioFile.name.replace(/\s+/g, '_')}`;
-                const audioUrl = await uploadFileToGit(audioBase64, audioName, audioFolder, token);
-
-                // 2. Cover Upload (Optional)
-                let coverUrl = "";
+                let audioUrl = "", videoUrl = "", coverUrl = "";
+                
                 if(coverFile) {
-                    status.innerText = "Uploading Cover Image...";
-                    const coverBase64 = await getBase64(coverFile);
-                    const coverName = `${Date.now()}_${coverFile.name.replace(/\s+/g, '_')}`;
-                    coverUrl = await uploadFileToGit(coverBase64, coverName, imageFolder, token);
+                    status.innerText = "Uploading Cover Avatar...";
+                    coverUrl = await uploadFileToGit(await getBase64(coverFile), `${Date.now()}_cover.jpg`, imageFolder, token);
+                }
+                if(audioFile) {
+                    status.innerText = "Uploading Audio...";
+                    audioUrl = await uploadFileToGit(await getBase64(audioFile), `${Date.now()}_audio.mp3`, audioFolder, token);
+                }
+                if(videoFile) {
+                    status.innerText = "Uploading Video...";
+                    videoUrl = await uploadFileToGit(await getBase64(videoFile), `${Date.now()}_video.mp4`, audioFolder, token);
                 }
 
-                // 3. Save to Firebase
                 status.innerText = "Saving data to Firebase...";
                 await db.collection('songs').add({
-                    title, artist, url: audioUrl, coverUrl,
+                    title, artist, url: audioUrl, videoUrl, coverUrl,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 status.style.color = "#4CAF50"; status.innerText = "Upload Complete!";
-                document.getElementById('songTitle').value = '';
-                document.getElementById('artistName').value = '';
-                document.getElementById('audioFile').value = '';
-                document.getElementById('coverFile').value = '';
-                
-                loadSongs(); // Refresh list
-
+                document.getElementById('songTitle').value = ''; document.getElementById('artistName').value = '';
+                document.getElementById('audioFile').value = ''; document.getElementById('coverFile').value = '';
+                document.getElementById('videoFile').value = '';
+                loadSongs(); 
             } catch (error) {
-                console.error(error);
-                status.style.color = "var(--yt-red)"; status.innerText = `Error: ${error.message}`;
-            } finally {
-                btn.disabled = false; btn.innerText = "Upload to Server";
+                console.error(error); status.style.color = "var(--yt-red)"; status.innerText = `Error: ${error.message}`;
+            } finally { btn.disabled = false; btn.innerText = "Upload to Server"; }
+        }
+
+        // --- Admin Manage Operations ---
+        function renderManageList() {
+            let html = '';
+            songs.forEach((song, i) => {
+                html += `
+                    <div class="history-item" style="justify-content: space-between;">
+                        <div style="display:flex; align-items:center; gap:15px; overflow:hidden;">
+                            <img src="${song.coverUrl || ''}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+                            <div style="overflow:hidden;"><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>
+                        </div>
+                        <div class="manage-action-btns" style="white-space:nowrap;">
+                            ${song.videoUrl ? '<i class="fa-solid fa-video" style="color:var(--text-secondary); cursor:default;"></i>' : ''}
+                            <i class="fa-solid fa-pen-to-square" onclick="openEditModal('${song.id}')"></i>
+                            <i class="fa-solid fa-trash" onclick="deleteSong('${song.id}')"></i>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('manage-list').innerHTML = html || '<p>No tracks uploaded yet.</p>';
+        }
+
+        async function deleteSong(id) {
+            if(confirm("Are you sure you want to delete this track?")) {
+                try {
+                    await db.collection('songs').doc(id).delete();
+                    loadSongs();
+                } catch(e) { alert("Failed to delete."); }
+            }
+        }
+
+        function openEditModal(id) {
+            const song = songs.find(s => s.id === id);
+            editIdTemp = id;
+            const m = document.getElementById('systemModal');
+            document.getElementById('modal-content-area').innerHTML = `
+                <h3 style="margin-bottom: 20px;">Edit Track Details</h3>
+                <div class="form-group"><label>Title</label><input type="text" id="editTitle" value="${song.title}" class="input" style="width:100%; padding:10px; border-radius:5px; border:1px solid #555; background:transparent; color:#fff;"></div>
+                <div class="form-group"><label>Publisher / Artist</label><input type="text" id="editArtist" value="${song.artist}" class="input" style="width:100%; padding:10px; border-radius:5px; border:1px solid #555; background:transparent; color:#fff;"></div>
+                <div class="form-group"><label>New Cover Image (Optional)</label><input type="file" id="editCoverFile" accept="image/*" style="width:100%; color:#fff;"></div>
+                <button class="btn" onclick="saveEdit()" id="saveEditBtn">Save Changes</button>
+                <button class="btn" style="background: transparent; border: 1px solid var(--divider);" onclick="closeModal()">Cancel</button>
+            `;
+            m.style.display = 'flex';
+        }
+
+        async function saveEdit() {
+            const nTitle = document.getElementById('editTitle').value;
+            const nArtist = document.getElementById('editArtist').value;
+            const nCover = document.getElementById('editCoverFile').files[0];
+            const token = localStorage.getItem('gitToken');
+            const btn = document.getElementById('saveEditBtn');
+            
+            btn.innerText = "Updating..."; btn.disabled = true;
+            try {
+                let updates = { title: nTitle, artist: nArtist };
+                if(nCover) {
+                    if(!token) throw new Error("API Key missing! Cannot upload new image.");
+                    updates.coverUrl = await uploadFileToGit(await getBase64(nCover), `${Date.now()}_cover.jpg`, imageFolder, token);
+                }
+                await db.collection('songs').doc(editIdTemp).update(updates);
+                closeModal();
+                loadSongs();
+            } catch(e) {
+                alert("Error updating: " + e.message);
+                btn.innerText = "Save Changes"; btn.disabled = false;
             }
         }
     </script>
