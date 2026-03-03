@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Music | By Nur</title>
+    
+    <!-- Google Fonts: Roboto (Used by YouTube) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK (v8 compat for single file) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        /* ================= YT MUSIC DARK THEME VARIABLES ================= */
+        :root {
+            --bg-color: #030303;
+            --surface-color: #212121;
+            --surface-hover: #3d3d3d;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --yt-red: #ff0000;
+            --player-bg: #212121;
+            --divider: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            padding: 10px 15px;
+            border-right: 1px solid var(--divider);
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            padding: 15px 10px 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand i {
+            color: var(--text-primary);
+            background: var(--yt-red);
+            padding: 5px;
+            border-radius: 50%;
+            font-size: 14px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-links li {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            border-radius: 8px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .nav-links li:hover {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .nav-links li.active {
+            background-color: var(--surface-hover);
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .nav-links li.active i {
+            color: var(--text-primary);
+        }
+
+        .dev-credit {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            border-top: 1px solid var(--divider);
+        }
+
+        /* ================= TOP NAVIGATION ================= */
+        .top-nav {
+            position: absolute;
+            top: 0;
+            left: 240px;
+            right: 0;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            background: rgba(3, 3, 3, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 50;
+        }
+
+        .search-bar {
+            background: var(--surface-color);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 400px;
+            border: 1px solid var(--divider);
+        }
+
+        /* ================= MAIN CONTENT ================= */
+        .main-content {
+            flex: 1;
+            padding: 84px 30px 100px; /* Space for top nav and bottom player */
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title img {
+            width: 40px;
+            border-radius: 50%;
+        }
+
+        /* ================= MUSIC CARDS (YT MUSIC STYLE) ================= */
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .music-card {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .cover-art {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--surface-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Hover Overlay for Play Button */
+        .play-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .play-overlay i {
+            font-size: 30px;
+            color: var(--text-primary);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .music-card:hover .play-overlay { opacity: 1; }
+
+        .song-title {
+            font-weight: 500;
+            font-size: 15px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-artist {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .music-card:hover .song-title { text-decoration: underline; }
+
+        /* Dark Skeleton Loader */
+        .skeleton {
+            background: linear-gradient(90deg, #212121 25%, #333333 50%, #212121 75%);
+            background-size: 200% 100%;
+            animation: skeletonLoading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes skeletonLoading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ================= BOTTOM PLAYER (YT MUSIC STYLE) ================= */
+        .player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 72px;
+            background: var(--player-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        /* Top Progress Bar (Like YT Music) */
+        .progress-container {
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: height 0.2s;
+            z-index: 1001;
+        }
+
+        .progress-container:hover { height: 6px; top: -5px; }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--yt-red);
+            width: 0%;
+            position: relative;
+        }
+
+        .player-info { display: flex; align-items: center; gap: 15px; width: 30%; }
+        .player-cover { width: 40px; height: 40px; background: var(--surface-hover); border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); }
+        
+        .player-controls { flex: 1; display: flex; align-items: center; justify-content: center; gap: 25px; }
+        .control-btns { font-size: 20px; color: var(--text-primary); cursor: pointer; transition: color 0.2s; }
+        .control-btns:hover { color: var(--text-secondary); }
+        
+        .play-btn { font-size: 40px; }
+        .play-btn:hover { transform: scale(1.05); color: var(--text-primary); }
+
+        .player-volume { width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; color: var(--text-secondary); }
+        .time-display { font-size: 12px; color: var(--text-secondary); min-width: 80px; text-align: right; }
+        
+        .volume-bar { width: 100px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; }
+        .volume-fill { height: 100%; background: var(--text-primary); width: 100%; border-radius: 2px; }
+
+        /* ================= ADMIN & MODAL (DARK THEME) ================= */
+        .admin-panel { max-width: 600px; background: var(--surface-color); padding: 30px; border-radius: 8px; border: 1px solid var(--divider); margin-top: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-secondary); }
+        .form-group input { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--divider); color: var(--text-primary); border-radius: 4px; outline: none; }
+        .form-group input:focus { border-color: var(--text-primary); }
+        .btn { background: var(--text-primary); color: var(--bg-color); border: none; padding: 12px 20px; border-radius: 18px; cursor: pointer; font-size: 15px; font-weight: 500; width: 100%; }
+        .btn:hover { background: #e0e0e0; }
+        .btn-outline { background: transparent; border: 1px solid var(--divider); color: var(--text-primary); }
+        .btn-outline:hover { background: var(--surface-hover); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: var(--surface-color); padding: 30px; border-radius: 8px; text-align: center; width: 350px; border: 1px solid var(--divider); }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-play"></i> Music
+        </div>
+        <ul class="nav-links">
+            <li class="active" onclick="switchPage('home')"><i class="fa-solid fa-house"></i> Home</li>
+            <li onclick="switchPage('explore')"><i class="fa-solid fa-compass"></i> Explore</li>
+            <li onclick="switchPage('library')"><i class="fa-solid fa-music"></i> Library</li>
+            <li style="margin-top: 20px; border-top: 1px solid var(--divider); padding-top: 20px;" onclick="checkAdminPassword()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Music</li>
+        </ul>
+        <div class="dev-credit">Developed by <strong>Nur</strong></div>
+    </div>
+
+    <!-- Top Navbar -->
+    <div class="top-nav">
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i> Search songs, albums, artists
+        </div>
+        <div style="margin-left: auto; width: 32px; height: 32px; background: var(--yt-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">N</div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="section-title">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--surface-hover); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="fa-solid fa-headphones"></i></div>
+                <div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 400;">START RADIO FROM A SONG</div>
+                    Quick picks
+                </div>
+            </div>
+            <div class="music-grid" id="music-list">
+                <!-- Skeleton Loaders -->
+            </div>
+        </div>
+
+        <!-- Explore Page -->
+        <div id="explore" class="page">
+            <div class="section-title">New releases</div>
+            <div class="music-grid" id="explore-list"></div>
+        </div>
+
+        <!-- Library Page -->
+        <div id="library" class="page">
+            <div class="section-title">Your Library</div>
+            <p style="color: var(--text-secondary);">Songs loaded from Firebase & GitHub.</p>
+        </div>
+
+        <!-- Admin / Upload Page -->
+        <div id="admin" class="page">
+            <div class="section-title">Upload Track</div>
+            <div class="admin-panel">
+                <div class="form-group">
+                    <label>Song Title</label>
+                    <input type="text" id="songTitle" placeholder="e.g. Believer">
+                </div>
+                <div class="form-group">
+                    <label>Artist Name</label>
+                    <input type="text" id="artistName" placeholder="e.g. Imagine Dragons">
+                </div>
+                <div class="form-group">
+                    <label>Select Audio File (.mp3)</label>
+                    <input type="file" id="audioFile" accept="audio/*" style="border: none; padding: 0;">
+                </div>
+                <div class="form-group">
+                    <label>GitHub Personal Access Token (PAT)</label>
+                    <input type="password" id="gitToken" placeholder="ghp_xxxxxxxxxxxxxxxxx">
+                </div>
+                <button class="btn" onclick="uploadAudio()">Upload File</button>
+                <p id="upload-status" style="margin-top: 15px; text-align: center; font-size: 14px; color: var(--text-secondary);"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Audio Player (YT Music Style) -->
+    <div class="player-bar">
+        <!-- Thin Progress Bar at top -->
+        <div class="progress-container" id="progress-container" onclick="setProgress(event)">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="player-info">
+            <div class="player-cover"><i class="fa-solid fa-music"></i></div>
+            <div style="overflow: hidden;">
+                <div id="curr-title" style="font-weight: 500; font-size: 14px; white-space: nowrap;">No Track Selected</div>
+                <div id="curr-artist" style="font-size: 13px; color: var(--text-secondary); white-space: nowrap;">---</div>
+            </div>
+        </div>
+        
+        <div class="player-controls">
+            <i class="fa-solid fa-backward-step control-btns" onclick="prevTrack()"></i>
+            <i class="fa-solid fa-circle-play control-btns play-btn" id="play-pause-btn" onclick="togglePlay()"></i>
+            <i class="fa-solid fa-forward-step control-btns" onclick="nextTrack()"></i>
+        </div>
+
+        <div class="player-volume">
+            <div class="time-display"><span id="curr-time">0:00</span> / <span id="total-time">0:00</span></div>
+            <i class="fa-solid fa-volume-low"></i>
+            <div class="volume-bar" onclick="setVolume(event)">
+                <div class="volume-fill" id="volume-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-weight: 500;">Admin Access</h3>
+            <input type="password" id="adminPass" placeholder="Enter Password" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--divider); border-radius: 4px; background: transparent; color: #fff; outline: none;">
+            <button class="btn" onclick="verifyAdmin()" style="margin-bottom: 10px;">Login</button>
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Hidden Audio Element -->
+    <audio id="main-audio"></audio>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // 1. Firebase Configuration (Provided by user)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtfjaSSlaDYUsogHrvBn_6MbEbM-M-O4Q",
+            authDomain: "test-g-login-nur.firebaseapp.com",
+            projectId: "test-g-login-nur",
+            storageBucket: "test-g-login-nur.firebasestorage.app",
+            messagingSenderId: "19016505156",
+            appId: "1:19016505156:web:72b1480a444317853f6911",
+            measurementId: "G-QX5D57GRX8"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // Variables
+        let songs = [];
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        const audioElement = document.getElementById('main-audio');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+
+        // GitHub Config
+        const gitOwner = "jomidokhol";
+        const gitRepo = "one-music";
+        const gitBranch = "main";
+        const gitFolder = "audio";
+
+        // ================= ROUTING & MODAL =================
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function checkAdminPassword() {
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('adminPass').value = '';
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === "431564") {
+                closeModal();
+                // Manually switch page to admin
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById('admin').classList.add('active');
+                
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.nav-links li')[3].classList.add('active');
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
+
+        // ================= LOAD DATA (SKELETON & FIREBASE) =================
+        function renderSkeletons() {
+            const list = document.getElementById('music-list');
+            list.innerHTML = '';
+            for(let i=0; i<6; i++) {
+                list.innerHTML += `
+                    <div class="music-card">
+                        <div class="cover-art skeleton" style="box-shadow: none;"></div>
+                        <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: 6px;"></div>
+                        <div class="skeleton" style="height: 12px; width: 50%;"></div>
+                    </div>`;
+            }
+        }
+
+        async function loadSongs() {
+            renderSkeletons();
+            try {
+                const snapshot = await db.collection('songs').get();
+                songs = [];
+                snapshot.forEach(doc => {
+                    songs.push({ id: doc.id, ...doc.data() });
+                });
+                displaySongs(songs);
+            } catch (error) {
+                console.error("Error loading songs: ", error);
+                document.getElementById('music-list').innerHTML = `<p style="color:var(--yt-red);">Failed to connect to Firebase.</p>`;
+            }
+        }
+
+        function displaySongs(songData) {
+            const lists = [document.getElementById('music-list'), document.getElementById('explore-list')];
+            let html = '';
+            
+            if(songData.length === 0) {
+                html = '<p style="color: var(--text-secondary);">No songs found. Please upload some music.</p>';
+            } else {
+                songData.forEach((song, index) => {
+                    html += `
+                        <div class="music-card" onclick="loadTrack(${index})">
+                            <div class="cover-art">
+                                <i class="fa-solid fa-music"></i>
+                                <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
+                            </div>
+                            <div class="song-title">${song.title}</div>
+                            <div class="song-artist">${song.artist}</div>
+                        </div>`;
+                });
+            }
+
+            lists.forEach(list => { if(list) list.innerHTML = html; });
+        }
+
+        // ================= AUDIO PLAYER LOGIC =================
+        function loadTrack(index) {
+            if(songs.length === 0) return;
+            currentSongIndex = index;
+            const song = songs[index];
+            
+            audioElement.src = song.url;
+            document.getElementById('curr-title').innerText = song.title;
+            document.getElementById('curr-artist').innerText = song.artist;
+            
+            audioElement.load();
+            playTrack();
+        }
+
+        function playTrack() {
+            audioElement.play();
+            isPlaying = true;
+            playPauseBtn.classList.replace('fa-circle-play', 'fa-circle-pause');
+        }
+
+        function pauseTrack() {
+            audioElement.pause();
+            isPlaying = false;
+            playPauseBtn.classList.replace('fa-circle-pause', 'fa-circle-play');
+        }
+
+        function togglePlay() {
+            if(audioElement.src === "" || audioElement.src === window.location.href) return;
+            isPlaying ? pauseTrack() : playTrack();
+        }
+
+        function nextTrack() {
+            if(currentSongIndex < songs.length - 1) {
+                loadTrack(currentSongIndex + 1);
+            } else {
+                loadTrack(0);
+            }
+        }
+
+        function prevTrack() {
+            if(currentSongIndex > 0) {
+                loadTrack(currentSongIndex - 1);
+            } else {
+                loadTrack(songs.length - 1);
+            }
+        }
+
+        // Update Progress Bar
+        audioElement.addEventListener('timeupdate', () => {
+            const { currentTime, duration } = audioElement;
+            if(!isNaN(duration)) {
+                const progressPercent = (currentTime / duration) * 100;
+                document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+                document.getElementById('curr-time').innerText = formatTime(currentTime);
+                document.getElementById('total-time').innerText = formatTime(duration);
+            }
+        });
+
+        audioElement.addEventListener('ended', nextTrack);
+
+        function setProgress(e) {
+            const width = document.getElementById('progress-container').clientWidth;
+            const clickX = e.offsetX;
+            const duration = audioElement.duration;
+            audioElement.currentTime = (clickX / width) * duration;
+        }
+
+        function setVolume(e) {
+            const width = e.currentTarget.clientWidth;
+            const clickX = e.offsetX;
+            const vol = clickX / width;
+            audioElement.volume = vol;
+            document.getElementById('volume-fill').style.width = `${vol * 100}%`;
+        }
+
+        function formatTime(time) {
+            const min = Math.floor(time / 60);
+            const sec = Math.floor(time % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        // ================= GITHUB & FIREBASE UPLOAD LOGIC =================
+        async function uploadAudio() {
+            const title = document.getElementById('songTitle').value;
+            const artist = document.getElementById('artistName').value;
+            const fileInput = document.getElementById('audioFile').files[0];
+            const token = document.getElementById('gitToken').value;
+            const statusText = document.getElementById('upload-status');
+
+            if(!title || !artist || !fileInput || !token) {
+                alert("Please fill all fields, including the GitHub Token.");
+                return;
+            }
+
+            statusText.style.color = "var(--text-primary)";
+            statusText.innerText = "Processing File...";
+
+            // Read file as Base64
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64Content = reader.result.split(',')[1];
+                const fileName = `${Date.now()}_${fileInput.name.replace(/\s+/g, '_')}`;
+
+                try {
+                    statusText.innerText = "Uploading to GitHub Database...";
+                    
+                    const gitApiUrl = `https://api.github.com/repos/${gitOwner}/${gitRepo}/contents/${gitFolder}/${fileName}`;
+                    
+                    const response = await fetch(gitApiUrl, {
+                        method: "PUT",
+                        headers: {
+                            "Authorization": `token ${token}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: `Add audio: ${title}`,
+                            content: base64Content,
+                            branch: gitBranch
+                        })
+                    });
+
+                    const gitData = await response.json();
+
+                    if(response.ok) {
+                        statusText.innerText = "Syncing with Firebase...";
+                        
+                        // GitHub raw download URL
+                        const rawUrl = `https://raw.githubusercontent.com/${gitOwner}/${gitRepo}/${gitBranch}/${gitFolder}/${fileName}`;
+
+                        // Save metadata to Firebase
+                        await db.collection('songs').add({
+                            title: title,
+                            artist: artist,
+                            url: rawUrl,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        statusText.style.color = "#2ba640"; // Green for success
+                        statusText.innerText = "Upload Successful!";
+                        
+                        // Reset Form
+                        document.getElementById('songTitle').value = '';
+                        document.getElementById('artistName').value = '';
+                        document.getElementById('audioFile').value = '';
+                        
+                        loadSongs();
+
+                    } else {
+                        throw new Error(gitData.message || "GitHub Upload Failed");
+                    }
+
+                } catch(err) {
+                    console.error(err);
+                    statusText.style.color = "var(--yt-red)";
+                    statusText.innerText = `Error: ${err.message}`;
+                }
+            };
+            
+            reader.readAsDataURL(fileInput);
+        }
+
+        // Init
+        window.onload = () => {
+            audioElement.volume = 1;
+            loadSongs();
+        };
+
+    </script>
+</body>
+</html>
