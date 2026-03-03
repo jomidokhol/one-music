@@ -31,6 +31,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; }
 
+        /* ================= APP LOGO & SKELETON ================= */
+        .app-logo { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        
+        .skeleton-card { background: var(--surface-color); border-radius: 8px; padding-bottom: 10px; position: relative; overflow: hidden; }
+        .skeleton-art { width: 100%; aspect-ratio: 1; background: var(--surface-hover); position: relative; display:flex; align-items:center; justify-content:center; margin-bottom: 10px; }
+        .skeleton-art::before { content: ""; background: url('img/logo.png') center/contain no-repeat; filter: grayscale(100%); opacity: 0.1; position: absolute; top: 20%; left: 20%; right: 20%; bottom: 20%; animation: pulse 1.5s infinite; }
+        .skeleton-text { height: 12px; background: var(--surface-hover); margin: 5px 10px; border-radius: 4px; animation: pulse 1.5s infinite; }
+        .skeleton-text.short { width: 60%; }
+        
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ================= SPINNING DISC & LOADING ================= */
+        .spinning-disc { width: 100%; height: 100%; border-radius: 50%; background: repeating-radial-gradient(#222 0, #222 4px, #111 5px, #111 6px); animation: spin 4s linear infinite; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 5px rgba(0,0,0,0.8); }
+        .spinning-disc::after { content: ''; width: 25%; height: 25%; background: #ff0000; border-radius: 50%; border: 2px solid #111; }
+        .history-item .spinning-disc { width: 50px; height: 50px; flex-shrink: 0; }
+        
+        .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: inherit; }
+        .loading-overlay img { width: 40px; height: 40px; animation: spin 1s linear infinite; border-radius: 50%; }
+
         /* ================= MOBILE TOP BAR ================= */
         .mobile-header { display: none; height: 60px; background: var(--bg-color); align-items: center; padding: 0 15px; border-bottom: 1px solid var(--divider); z-index: 100; position: fixed; top: 0; left: 0; width: 100%; }
         .mobile-menu-btn { font-size: 24px; color: var(--text-primary); margin-right: 15px; cursor: pointer; }
@@ -40,7 +60,6 @@
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 150; }
         
         .brand { font-size: 22px; font-weight: 700; padding: 15px 10px 30px; display: flex; align-items: center; gap: 10px; }
-        .brand i { color: var(--text-primary); background: var(--yt-red); padding: 5px; border-radius: 50%; font-size: 14px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
 
         .nav-links { list-style: none; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; }
         .nav-links li { padding: 15px; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 20px; color: var(--text-secondary); font-weight: 500; border-radius: 8px; transition: 0.2s; }
@@ -69,7 +88,6 @@
         .music-card { cursor: pointer; position: relative; }
         .cover-art { width: 100%; aspect-ratio: 1; background: var(--surface-hover); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; position: relative; }
         .cover-art img { width: 100%; height: 100%; object-fit: cover; }
-        .cover-art .placeholder { font-size: 40px; color: var(--text-secondary); }
         .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; }
         .play-overlay i { font-size: 40px; color: var(--text-primary); }
         .music-card:hover .play-overlay { opacity: 1; }
@@ -100,7 +118,6 @@
         /* ================= MINI PLAYER ================= */
         .mini-player { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--surface-color); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 500; border-top: 1px solid var(--divider); cursor: pointer; }
         .mini-info { display: flex; align-items: center; gap: 15px; flex: 1; overflow: hidden; }
-        .mini-info img { width: 45px; height: 45px; border-radius: 4px; object-fit: cover; background: var(--surface-hover); }
         .mini-text { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
         .mini-controls { display: flex; align-items: center; gap: 20px; font-size: 24px; padding-left: 15px; }
         .mini-progress { position: absolute; top: -2px; left: 0; width: 100%; height: 3px; background: var(--divider); }
@@ -143,7 +160,13 @@
         .fp-play-btn { width: 70px; height: 70px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; }
 
         .fp-bottom-tabs { display: flex; justify-content: space-around; padding: 20px; border-top: 1px solid var(--divider); font-size: 14px; color: var(--text-secondary); font-weight: 500; }
-        .up-next-list { display: none; padding: 20px; flex: 1; overflow-y: auto; background: var(--bg-color); }
+        
+        /* Up Next Bottom Layer */
+        .up-next-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: var(--surface-color); border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s ease-in-out; z-index: 10000; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        .up-next-layer.show { transform: translateY(0); }
+        .un-header { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--divider); font-weight: bold; font-size: 18px; }
+        .un-close { cursor: pointer; font-size: 20px; color: var(--text-secondary); }
+        .un-body { flex: 1; overflow-y: auto; padding: 15px 25px; }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
@@ -163,7 +186,7 @@
     <div class="mobile-header">
         <i class="fa-solid fa-bars mobile-menu-btn" onclick="toggleSidebar()"></i>
         <div class="brand" style="padding: 0; margin-left: 10px;">
-            <i class="fa-solid fa-play"></i> Music
+            <img src="img/logo.png" class="app-logo" alt="Logo"> Music
         </div>
     </div>
 
@@ -171,7 +194,7 @@
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="brand" style="padding-top: 20px;">
-            <i class="fa-solid fa-play"></i> Music
+            <img src="img/logo.png" class="app-logo" alt="Logo"> Music
         </div>
         <ul class="nav-links">
             <li class="active" onclick="switchPage('home')"><i class="fa-solid fa-house"></i> Home</li>
@@ -262,7 +285,11 @@
     <div class="mini-player" id="mini-player" onclick="toggleFullPlayer()">
         <div class="mini-progress"><div class="mini-progress-fill" id="mini-progress"></div></div>
         <div class="mini-info">
-            <img id="mini-cover" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="">
+            <div style="position:relative; width:45px; height:45px; flex-shrink:0;">
+                <img id="mini-cover" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="" style="width:100%;height:100%;border-radius:4px;object-fit:cover;display:none;">
+                <div id="mini-disc" class="spinning-disc" style="display:none;"></div>
+                <div class="loading-overlay" id="mini-loading" style="display:none; border-radius:4px;"><img src="img/logo.png" style="width:20px;height:20px;"></div>
+            </div>
             <div class="mini-text">
                 <div id="mini-title" class="song-title" style="margin:0;">No Track Playing</div>
                 <div id="mini-artist" class="song-artist">---</div>
@@ -286,15 +313,14 @@
         </div>
 
         <div class="fp-cover-container" id="fp-main-view">
-            <!-- Cover or Video shown based on tab -->
-            <img id="fp-cover" class="fp-cover" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Cover">
-            <!-- Central Media Element (Used for Both Audio & Video) -->
+            <!-- Cover/Disc or Video shown based on tab -->
+            <div style="position:relative; width: 100%; max-width: 350px; aspect-ratio:1; display:flex; justify-content:center; align-items:center;" id="fp-cover-wrapper">
+                <img id="fp-cover" class="fp-cover" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Cover" style="display:none;">
+                <div class="spinning-disc fp-cover" id="fp-disc" style="display:none;"></div>
+                <div class="loading-overlay" id="fp-loading" style="display:none; border-radius:10px;"><img src="img/logo.png"></div>
+            </div>
+            <!-- Central Media Element -->
             <video id="main-audio" playsinline></video>
-        </div>
-
-        <div class="up-next-list" id="fp-up-next">
-            <h3 style="margin-bottom: 20px;">Up Next</h3>
-            <div id="up-next-container" class="history-list"></div>
         </div>
 
         <div class="fp-details">
@@ -333,8 +359,17 @@
 
         <div class="fp-bottom-tabs">
             <div onclick="toggleUpNext(true)" style="cursor:pointer;">UP NEXT</div>
-            <div onclick="toggleUpNext(false)" style="cursor:pointer;">LYRICS</div>
-            <div onclick="toggleUpNext(false)" style="cursor:pointer;">RELATED</div>
+            <div onclick="toggleUpNext(true)" style="cursor:pointer;">LYRICS</div>
+            <div onclick="toggleUpNext(true)" style="cursor:pointer;">RELATED</div>
+        </div>
+
+        <!-- Up Next Layer Bottom Sheet -->
+        <div class="up-next-layer" id="up-next-layer">
+            <div class="un-header">
+                <span>Up Next</span>
+                <i class="fa-solid fa-chevron-down un-close" onclick="toggleUpNext(false)"></i>
+            </div>
+            <div class="un-body history-list" id="up-next-container"></div>
         </div>
     </div>
 
@@ -370,6 +405,7 @@
         let playHistory = [];
         let currentSongIndex = -1;
         let isPlaying = false;
+        let isLoadingTrack = false;
         const audioElement = document.getElementById('main-audio'); // Video Element
         let editIdTemp = null;
 
@@ -404,8 +440,12 @@
         }
 
         function toggleUpNext(show) {
-            document.getElementById('fp-main-view').style.display = show ? 'none' : 'flex';
-            document.getElementById('fp-up-next').style.display = show ? 'block' : 'none';
+            const upNextLayer = document.getElementById('up-next-layer');
+            if(show) {
+                upNextLayer.classList.add('show');
+            } else {
+                upNextLayer.classList.remove('show');
+            }
         }
 
         // --- Media Mode (Video/Audio) Toggle ---
@@ -415,11 +455,11 @@
             
             if(mode === 'video') {
                 document.getElementById('tab-video').classList.add('active');
-                document.getElementById('fp-cover').style.display = 'none';
+                document.getElementById('fp-cover-wrapper').style.display = 'none';
                 document.getElementById('main-audio').style.display = 'block'; // Show video element
             } else {
                 document.getElementById('tab-song').classList.add('active');
-                document.getElementById('fp-cover').style.display = 'block';
+                document.getElementById('fp-cover-wrapper').style.display = 'flex';
                 document.getElementById('main-audio').style.display = 'none'; // Hide video element
             }
         }
@@ -460,8 +500,21 @@
             if(tab === 'manage') renderManageList();
         }
 
-        // --- Data Loading ---
+        // --- Data Loading & Skeletons ---
+        function showSkeletons() {
+            const skeletonHtml = Array(6).fill(`
+                <div class="skeleton-card">
+                    <div class="skeleton-art"></div>
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                </div>
+            `).join('');
+            document.getElementById('music-list').innerHTML = skeletonHtml;
+            document.getElementById('explore-list').innerHTML = skeletonHtml;
+        }
+
         async function loadSongs() {
+            showSkeletons();
             try {
                 const snapshot = await db.collection('songs').orderBy('timestamp', 'desc').get();
                 songs = [];
@@ -475,7 +528,7 @@
             let html = '', listHtml = '';
             songs.forEach((song, i) => {
                 const cover = song.coverUrl || '';
-                const imgTag = cover ? `<img src="${cover}" alt="cover">` : `<i class="fa-solid fa-music placeholder"></i>`;
+                const imgTag = cover ? `<img src="${cover}" alt="cover">` : `<div class="spinning-disc"></div>`;
                 
                 html += `
                     <div class="music-card" onclick="playTrack(${i})">
@@ -486,7 +539,7 @@
                 
                 listHtml += `
                     <div class="history-item" onclick="playTrack(${i})">
-                        ${cover ? `<img src="${cover}">` : `<div style="width:50px;height:50px;background:#333;display:flex;align-items:center;justify-content:center;border-radius:4px;"><i class="fa-solid fa-music"></i></div>`}
+                        ${cover ? `<img src="${cover}">` : `<div class="spinning-disc"></div>`}
                         <div>
                             <div class="song-title">${song.title}</div>
                             <div class="song-artist">${song.artist}</div>
@@ -526,9 +579,10 @@
             let html = '';
             results.forEach(song => {
                 const index = songs.findIndex(s => s.id === song.id);
+                const coverHtml = song.coverUrl ? `<img src="${song.coverUrl}">` : `<div class="spinning-disc"></div>`;
                 html += `
                     <div class="history-item" onclick="playTrack(${index})">
-                        <img src="${song.coverUrl || ''}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+                        ${coverHtml}
                         <div><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>
                     </div>`;
             });
@@ -548,9 +602,10 @@
             let html = '';
             playHistory.forEach(song => {
                 const index = songs.findIndex(s => s.id === song.id);
+                const coverHtml = song.coverUrl ? `<img src="${song.coverUrl}">` : `<div class="spinning-disc"></div>`;
                 html += `
                     <div class="history-item" onclick="playTrack(${index})">
-                        <img src="${song.coverUrl || ''}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+                        ${coverHtml}
                         <div><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>
                     </div>`;
             });
@@ -562,22 +617,47 @@
             for(let i = currentSongIndex + 1; i < currentSongIndex + 10; i++) {
                 if(i >= songs.length) break;
                 const song = songs[i];
+                const coverHtml = song.coverUrl ? `<img src="${song.coverUrl}">` : `<div class="spinning-disc"></div>`;
                 html += `
                     <div class="history-item" onclick="playTrack(${i}); toggleUpNext(false);">
-                        <img src="${song.coverUrl || ''}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+                        ${coverHtml}
                         <div><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>
                     </div>`;
             }
-            document.getElementById('up-next-container').innerHTML = html || '<p>End of queue.</p>';
+            document.getElementById('up-next-container').innerHTML = html || '<p style="text-align:center;color:var(--text-secondary);">End of queue.</p>';
         }
 
-        // --- Player Controls ---
+        // --- Player Controls & Loading States ---
+        const showLoadingState = () => {
+            isLoadingTrack = true;
+            document.getElementById('mini-loading').style.display = 'flex';
+            document.getElementById('fp-loading').style.display = 'flex';
+            document.getElementById('mini-play-btn').className = 'fa-solid fa-spinner fa-spin';
+            document.getElementById('fp-play-icon').className = 'fa-solid fa-spinner fa-spin';
+        };
+
+        const hideLoadingState = () => {
+            isLoadingTrack = false;
+            document.getElementById('mini-loading').style.display = 'none';
+            document.getElementById('fp-loading').style.display = 'none';
+            updatePlayIcons();
+        };
+
+        audioElement.addEventListener('loadstart', showLoadingState);
+        audioElement.addEventListener('waiting', showLoadingState);
+        audioElement.addEventListener('canplay', hideLoadingState);
+        audioElement.addEventListener('playing', hideLoadingState);
+
         function playTrack(index) {
             if(songs.length === 0) return;
             currentSongIndex = index;
             const song = songs[index];
             
-            // If Video is uploaded, play video (it contains audio). Else, play audio file.
+            // URL Update
+            const urlSlug = song.title.replace(/\s+/g, '-').toLowerCase();
+            history.pushState(null, '', '?song=' + encodeURIComponent(urlSlug));
+
+            // Setup Media Elements
             audioElement.src = song.videoUrl ? song.videoUrl : song.url;
             audioElement.load();
             
@@ -589,15 +669,44 @@
                 toggleMediaMode('song'); // Force song view if no video
             }
             
-            // Update UI
-            const coverSrc = song.coverUrl || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+            // Update UI & Avatars/Discs
             document.getElementById('mini-title').innerText = song.title;
             document.getElementById('mini-artist').innerText = song.artist;
-            document.getElementById('mini-cover').src = coverSrc;
-            
             document.getElementById('fp-title').innerText = song.title;
             document.getElementById('fp-artist').innerText = song.artist;
-            document.getElementById('fp-cover').src = coverSrc;
+
+            const coverSrc = song.coverUrl || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+            
+            if(song.coverUrl) {
+                document.getElementById('mini-cover').style.display = 'block';
+                document.getElementById('mini-cover').src = coverSrc;
+                document.getElementById('mini-disc').style.display = 'none';
+                
+                document.getElementById('fp-cover').style.display = 'block';
+                document.getElementById('fp-cover').src = coverSrc;
+                document.getElementById('fp-disc').style.display = 'none';
+            } else {
+                document.getElementById('mini-cover').style.display = 'none';
+                document.getElementById('mini-disc').style.display = 'flex';
+                
+                document.getElementById('fp-cover').style.display = 'none';
+                document.getElementById('fp-disc').style.display = 'flex';
+            }
+
+            // Dynamic Island / Media Session API Support
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: song.title,
+                    artist: song.artist,
+                    artwork: [
+                        { src: song.coverUrl ? coverSrc : 'img/logo.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+                navigator.mediaSession.setActionHandler('play', togglePlay);
+                navigator.mediaSession.setActionHandler('pause', togglePlay);
+                navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+                navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+            }
 
             addToHistory(song);
             renderUpNext();
@@ -615,14 +724,15 @@
         }
 
         function updatePlayIcons() {
+            if (isLoadingTrack) return;
             const mini = document.getElementById('mini-play-btn');
             const fp = document.getElementById('fp-play-icon');
             if(isPlaying) {
-                mini.classList.replace('fa-play', 'fa-pause');
-                fp.classList.replace('fa-play', 'fa-pause');
+                mini.className = 'fa-solid fa-pause';
+                fp.className = 'fa-solid fa-pause';
             } else {
-                mini.classList.replace('fa-pause', 'fa-play');
-                fp.classList.replace('fa-pause', 'fa-play');
+                mini.className = 'fa-solid fa-play';
+                fp.className = 'fa-solid fa-play';
             }
         }
 
@@ -738,10 +848,11 @@
         function renderManageList() {
             let html = '';
             songs.forEach((song, i) => {
+                const coverHtml = song.coverUrl ? `<img src="${song.coverUrl}">` : `<div class="spinning-disc"></div>`;
                 html += `
                     <div class="history-item" style="justify-content: space-between;">
                         <div style="display:flex; align-items:center; gap:15px; overflow:hidden;">
-                            <img src="${song.coverUrl || ''}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+                            ${coverHtml}
                             <div style="overflow:hidden;"><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>
                         </div>
                         <div class="manage-action-btns" style="white-space:nowrap;">
